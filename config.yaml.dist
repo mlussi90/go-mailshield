@@ -1,0 +1,11 @@
+poll_interval: 30s
+workers: 2
+accounts:
+  - name: "example"
+    host: "mail.example.com:993"
+    tls: true
+    username: "user@example.com"
+    password: "yourpassword"
+    inbox: "INBOX"
+    spam_folder: "Spam"
+    search_unseen_only: true

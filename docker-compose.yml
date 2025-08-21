@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    container_name: mailshield
+    depends_on:
+      - spamassassin
+    environment:
+      - SPAMASSASSIN_HOST=spamassassin
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    restart: unless-stopped
+
+  spamassassin:
+    build: ./spamassassin
+    container_name: spamassassin
+    ports:
+      - "783:783"
+    restart: unless-stopped

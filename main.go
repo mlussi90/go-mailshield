@@ -70,7 +70,7 @@ retry:
 			return
 		}
 		fmt.Printf("[%s] processing mailbox \n", acc.Name)
-		if err := handleMailbox(ctx, c, acc); err != nil {
+		if err := handleMailbox(c, acc); err != nil {
 			fmt.Printf("[%s] process error: %v \n", acc.Name, err)
 			time.Sleep(5 * time.Second)
 		}
@@ -82,7 +82,7 @@ retry:
 	}
 }
 
-func handleMailbox(ctx context.Context, c *client.Client, acc IMAPAccount) error {
+func handleMailbox(c *client.Client, acc IMAPAccount) error {
 	_, err := c.Select(acc.Inbox, false)
 	if err != nil {
 		return fmt.Errorf("[%s] reselect: %w", acc.Name, err)

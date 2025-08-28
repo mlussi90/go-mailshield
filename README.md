@@ -1,15 +1,18 @@
 # go-mailshield
 
 ## Motivation
+
 This project was created for two main reasons:
 
 * **Learning Project:** As a practical project to learn and deepen my Go programming skills. Working with IMAP, containers, and concurrent programming provides an excellent opportunity to apply various aspects of Go in practice.
 * **Practical Problem:** My email provider unfortunately doesn't offer sufficient spam filtering mechanisms. With this tool, I can use SpamAssassin as an additional filtering layer to keep my inbox clean.
 
 ## What does go-mailshield do?
+
 go-mailshield connects to your IMAP accounts, regularly checks for new emails, and forwards them to SpamAssassin for spam detection. Emails identified as spam are moved to the configured spam folder.
 
 ## Features
+
 * Monitoring of multiple IMAP accounts
 * Integration with SpamAssassin for reliable spam detection
 * Fully containerized solution with Docker
@@ -25,26 +28,31 @@ go-mailshield connects to your IMAP accounts, regularly checks for new emails, a
 
 ### Setup
 
-1. Clone the repository:
+* Clone the repository:
+
 ```bash
 git clone https://github.com/yourusername/go-mailshield.git
 cd go-mailshield
 ```
 
-2. Create a configuration file:
+* Create a configuration file:
+
 ```bash
 cp config.yaml.dist config.yaml
 ```
 
-3. Adjust the configuration (see Configuration section)
+* Adjust the configuration (see Configuration section)
 
-4. Start with Docker:
+* Start with Docker:
+
 ```bash
 docker compose up -d
 ```
 
 ### Configuration
+
 Edit the config.yaml according to your needs:
+
 ```yaml
 poll_interval: 30s  # Check interval
 workers: 2          # Number of parallel workers
@@ -60,7 +68,9 @@ accounts:
 ```
 
 ### Development
+
 For development, you can run SpamAssassin in a container and your Go app locally:
+
 ```bash
 # Start only SpamAssassin
 docker compose up spamassassin
@@ -77,10 +87,12 @@ go run .
 * Uses Context for clean shutdown handling
 
 ### Known Issues
+
 * Handling for the "worker" config value is missing
 * Logging instead of output
 
 ### License
+
 MIT
 
 ___

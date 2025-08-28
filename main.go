@@ -10,12 +10,18 @@ import (
 	"os/signal"
 	"time"
 
+	"mlussi90/go-mailshield/config"
+
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
 )
 
 func main() {
-	cfg := loadConfig("config.yaml")
+	cfg, err := config.LoadConfig("config/config.yaml")
+	if err != nil {
+		fmt.Printf("error loading config: %v\n", err)
+		return
+	}
 	fmt.Println("config loaded")
 
 	pollInterval, _ := time.ParseDuration(cfg.PollInterval)
@@ -31,7 +37,7 @@ func main() {
 	fmt.Println("shutdown")
 }
 
-func processAccount(ctx context.Context, acc IMAPAccount, pollInterval time.Duration) {
+func processAccount(ctx context.Context, acc config.IMAPAccount, pollInterval time.Duration) {
 	fmt.Printf("[%s] connecting to %s \n", acc.Name, acc.Host)
 	var c *client.Client
 	var err error
@@ -82,7 +88,7 @@ retry:
 	}
 }
 
-func handleMailbox(c *client.Client, acc IMAPAccount) error {
+func handleMailbox(c *client.Client, acc config.IMAPAccount) error {
 	_, err := c.Select(acc.Inbox, false)
 	if err != nil {
 		return fmt.Errorf("[%s] reselect: %w", acc.Name, err)

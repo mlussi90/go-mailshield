@@ -1,6 +1,7 @@
-package main
+package config
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -22,12 +23,17 @@ type IMAPAccount struct {
 	SearchUnseenOnly bool   `yaml:"search_unseen_only"`
 }
 
-func loadConfig(path string) Config {
+func LoadConfig(path string) (Config, error) {
 	f, err := os.Open(path)
-	must(err)
+	if err != nil {
+		return Config{}, fmt.Errorf("failed to open config file: %w", err)
+	}
 	defer f.Close()
 
 	var cfg Config
-	must(yaml.NewDecoder(f).Decode(&cfg))
-	return cfg
+	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
+		return Config{}, fmt.Errorf("failed to decode config file: %w", err)
+	}
+
+	return cfg, nil
 }

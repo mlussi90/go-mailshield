@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"os/signal"
 	"time"
 
 	"mlussi90/go-mailshield/config"
+	"mlussi90/go-mailshield/spam"
 
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
@@ -163,7 +163,7 @@ func handleMailbox(c *client.Client, acc config.IMAPAccount) error {
 		fmt.Printf("[%s] uid %d: processing mail (size: %d)\n",
 			acc.Name, fetchMsg.Uid, raw.Len())
 
-		isSpam, score, required, saErr := checkWithSpamc(raw.Bytes())
+		isSpam, score, required, saErr := spam.CheckWithSpamc(raw.Bytes())
 		if saErr != nil {
 			fmt.Printf("[%s] uid %d: spamc error: %v\n", acc.Name, fetchMsg.Uid, saErr)
 			continue
@@ -183,30 +183,6 @@ func handleMailbox(c *client.Client, acc config.IMAPAccount) error {
 
 	fmt.Printf("[%s] mails processed: %d\n", acc.Name, count)
 	return nil
-}
-
-func checkWithSpamc(raw []byte) (isSpam bool, score, required float64, err error) {
-	cmd := exec.Command("docker", "exec", "-i", "spamassassin", "spamc", "-c")
-	stdin, _ := cmd.StdinPipe()
-	go func() {
-		defer stdin.Close()
-		stdin.Write(raw)
-	}()
-
-	out, errRun := cmd.CombinedOutput()
-	if errRun != nil {
-		if ee, ok := errRun.(*exec.ExitError); ok {
-			isSpam = (ee.ExitCode() == 1)
-		} else {
-			return false, 0, 0, fmt.Errorf("spamc run: %w", errRun)
-		}
-	}
-
-	fmt.Sscanf(string(bytes.TrimSpace(out)), "%f/%f", &score, &required)
-	if !isSpam && score >= required {
-		isSpam = true
-	}
-	return
 }
 
 func moveUID(c *client.Client, uid uint32, dest string) error {

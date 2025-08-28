@@ -16,6 +16,7 @@ import (
 
 func main() {
 	cfg := loadConfig("config.yaml")
+	fmt.Println("config loaded")
 
 	pollInterval, _ := time.ParseDuration(cfg.PollInterval)
 
@@ -111,7 +112,7 @@ func handleMailbox(ctx context.Context, c *client.Client, acc IMAPAccount) error
 		oneSeqSet := new(imap.SeqSet)
 		oneSeqSet.AddNum(uid)
 
-		fetchItems := []imap.FetchItem{imap.FetchRFC822, imap.FetchUid}
+		fetchItems := []imap.FetchItem{imap.FetchUid, imap.FetchFlags, imap.FetchItem("BODY.PEEK[]")}
 
 		msgCh := make(chan *imap.Message, 1)
 		done := make(chan error, 1)
@@ -141,12 +142,16 @@ func handleMailbox(ctx context.Context, c *client.Client, acc IMAPAccount) error
 			continue
 		}
 
+		section := &imap.BodySectionName{}
+		r := fetchMsg.GetBody(section)
+		if r == nil {
+			fmt.Printf("[%s] uid %d: no body\n", acc.Name, fetchMsg.Uid)
+			continue
+		}
 		var raw bytes.Buffer
-		for _, literal := range fetchMsg.Body {
-			if _, err := io.Copy(&raw, literal); err != nil {
-				fmt.Printf("[%s] error reading message: %v\n", acc.Name, err)
-				continue
-			}
+		if _, err := io.Copy(&raw, r); err != nil {
+			fmt.Printf("[%s] error reading message: %v\n", acc.Name, err)
+			continue
 		}
 
 		fmt.Printf("[%s] uid %d: processing mail (size: %d)\n",
@@ -166,6 +171,7 @@ func handleMailbox(ctx context.Context, c *client.Client, acc IMAPAccount) error
 				fmt.Printf("[%s] uid %d: move error: %v\n", acc.Name, fetchMsg.Uid, err)
 				continue
 			}
+			fmt.Printf("[%s] uid %d: moved to folder %v\n", acc.Name, fetchMsg.Uid, acc.SpamFolder)
 		}
 	}
 

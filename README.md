@@ -76,6 +76,10 @@ go run .
 * Implements goroutines for parallel processing
 * Uses Context for clean shutdown handling
 
+### Known Issues
+* Handling for the "worker" config value is missing
+* Logging instead of output
+
 ### License
 MIT
 

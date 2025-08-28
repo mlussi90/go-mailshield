@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"mlussi90/go-mailshield/config"
+	imaputil "mlussi90/go-mailshield/imap"
 	"mlussi90/go-mailshield/spam"
 
 	"github.com/emersion/go-imap"
@@ -173,7 +174,7 @@ func handleMailbox(c *client.Client, acc config.IMAPAccount) error {
 			acc.Name, fetchMsg.Uid, score, required, isSpam)
 
 		if isSpam {
-			if err := moveUID(c, fetchMsg.Uid, acc.SpamFolder); err != nil {
+			if err := imaputil.MoveUID(c, fetchMsg.Uid, acc.SpamFolder); err != nil {
 				fmt.Printf("[%s] uid %d: move error: %v\n", acc.Name, fetchMsg.Uid, err)
 				continue
 			}
@@ -183,24 +184,4 @@ func handleMailbox(c *client.Client, acc config.IMAPAccount) error {
 
 	fmt.Printf("[%s] mails processed: %d\n", acc.Name, count)
 	return nil
-}
-
-func moveUID(c *client.Client, uid uint32, dest string) error {
-	caps, err := c.Capability()
-	if err == nil && caps["MOVE"] {
-		seq := new(imap.SeqSet)
-		seq.AddNum(uid)
-		return c.UidMove(seq, dest)
-	}
-
-	seq := new(imap.SeqSet)
-	seq.AddNum(uid)
-	if err := c.UidCopy(seq, dest); err != nil {
-		return err
-	}
-	item := imap.FormatFlagsOp(imap.AddFlags, true)
-	if err := c.UidStore(seq, item, []interface{}{imap.DeletedFlag}, nil); err != nil {
-		return err
-	}
-	return c.Expunge(nil)
 }

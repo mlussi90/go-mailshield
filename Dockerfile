@@ -7,5 +7,5 @@ RUN go build -o mailshield .
 FROM alpine:latest
 WORKDIR /app
 COPY --from=build /app/mailshield .
-COPY config.yaml .
+COPY config/config.yaml .
 CMD ["./mailshield"]

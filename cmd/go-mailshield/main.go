@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	cfg, err := config.LoadConfig("config/config.yaml")
+	cfg, err := config.LoadConfig("../../config/config.yaml")
 	if err != nil {
 		fmt.Printf("error loading config: %v\n", err)
 		return
